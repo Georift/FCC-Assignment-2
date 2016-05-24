@@ -83,7 +83,7 @@ int main(void)
     //printBinarySum(117);
     //printf("5^117 = 2^x where x = %lf", powerOfBase2(5, 117));
 
-    value = modularExponentiation(3, 97, 353);
+    value = modularExponentiation(198, 219469, 3921);
     if (value != -1)
     {
         printf("Found value = %d\n", value);
