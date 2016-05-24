@@ -1,6 +1,11 @@
 #include<stdio.h>
 #include<math.h>
 #include<locale.h>
+#include<time.h>
+#include<stdlib.h>
+#include<stdbool.h>
+
+int modularExponentiation(int M, int e, int n);
 
 /**
  * find the binary sum of a number
@@ -15,8 +20,6 @@ void printBinarySum(unsigned long num)
         // check how many 2^{jj} we can remove
         int count = remaining / (int)pow(2.0, jj);
         remaining = remaining - (count * (int)pow(2.0, jj));
-
-        printf("2^%d = %d\n", jj, count);
     } 
 }
 
@@ -32,20 +35,47 @@ double powerOfBase2(int base, int exponent)
     return ((exponent * log(base)) / log(2));
 }
 
+/*
+ * if the number is not 1 OR -1 it's NOT prime
+ * if 1 OR -1 then prob prime is at most 50% chance of prime
+ */
+int lehmann(int p)
+{
+    int a = rand() % p;
+    return modularExponentiation(a, ((p - 1) / 2), p);
+}
+
+/*
+ * run lehmann's t times
+ */
+bool loopLehmann(int p, int t)
+{
+    int ii;
+    bool prime = true;
+
+    for(ii = 0; ii < t; ii++)
+    {
+        int result = lehmann(p);
+        if (result != 1 && result != (result - 1))
+        {
+            prime = false; 
+        }
+    }
+    
+    return prime;
+}
+
+
 /**
  * calculated the modular exponentiation
  * M^{e} mod q
+ * Uses the following law to split large values:
+ * ( (M^{e/2} mod q) * (M^{e/2} mod q) ) mod q
  */
 int modularExponentiation(int M, int e, int n)
 {
     unsigned long c;
     int largestPowerOf2 = sizeof(unsigned long) * 8;
-
-    /*
-    printf("Unsigned long can hold %zu bytes\n", sizeof(unsigned long));
-    printf("This is the same as 2^%zu = %'.0f\n", (sizeof(unsigned long) * 8),
-            pow(2.0, (double)(sizeof(unsigned long) * 8)));
-    */
 
     /** 
      * unsigned longs have a max size of 2^64 
@@ -75,20 +105,55 @@ int modularExponentiation(int M, int e, int n)
     return c;
 }
 
+/*
+ * attempts to find a prime within the
+ * range provided.
+ *
+ * returns -1 on error/not found
+ *         prime number.
+ */
+int findPrime(int start, int end)
+{
+    int retVal = -1;
+    if (start < end)
+    {
+        int jj;
+        for (jj = start; jj <= end; jj++)
+        {
+            if (loopLehmann(jj, 10) == true)
+            {
+                printf("Found a prime %d\n", jj);
+            }
+        }
+    }
+
+    return retVal;
+}
+
 int main(void)
 {
-    int value = -1;
+    int value;
     setlocale(LC_NUMERIC, "");
-
-    //printBinarySum(117);
-    //printf("5^117 = 2^x where x = %lf", powerOfBase2(5, 117));
+    srand(time(NULL));
 
     value = modularExponentiation(198, 219469, 3921);
     if (value != -1)
     {
         printf("Found value = %d\n", value);
     }
-    //printf("solution %d\n", modularExponentiation(3, 97, 353));
+
+    int primeToTest = 991;
+    bool isPrime = loopLehmann(primeToTest, 10);
+    if (isPrime)
+    {
+        printf("%d is a prime number.\n", primeToTest);
+    }
+    else
+    {
+        printf("%d is a prime number.\n", primeToTest);
+    }
+    
+    findPrime(900, 1000);
 
     return 1;
 }
