@@ -4,11 +4,13 @@
 #include<time.h>
 #include<stdlib.h>
 #include<stdbool.h>
+#include<limits.h>
 
 #define PRIME_MIN 10000
-#define PRIME_MAX 100000
+#define PRIME_MAX 46000
+//#define PRIME_MAX 100000
 
-int modularExponentiation(int M, int e, int n);
+int modularExponentiation(unsigned int M, unsigned int e, unsigned int n);
 
 /**
  * find the binary sum of a number
@@ -75,7 +77,7 @@ bool loopLehmann(int p, int t)
  * Uses the following law to split large values:
  * ( (M^{e/2} mod q) * (M^{e/2} mod q) ) mod q
  */
-int modularExponentiation(int M, int e, int n)
+int modularExponentiation(unsigned int M, unsigned int e, unsigned int n)
 {
     unsigned long c;
     int largestPowerOf2 = sizeof(unsigned long) * 8;
@@ -205,6 +207,34 @@ int modularMultiplicativeInverse(int a, int m)
     return inverse;
 }
 
+/*
+ * finds the greatest common divisor between two
+ * numbers a and b.
+ */
+int gcd(int a, int b)
+{
+    int gcd;
+    while (a != 0 && b != 0)
+    {
+        if (a > b)
+        {
+            a %= b;
+        }
+        else
+        {
+            b %= a;
+        }
+    }
+
+    gcd = b;
+    if (a > b)
+    {
+        gcd = a;
+    }
+
+    return gcd;
+}
+
 int main(void)
 {
     /* setup functions for external libraries*/
@@ -269,11 +299,35 @@ int main(void)
     n = p * q;
 
     printf("We have the following values:\n");
-    printf("p = %d\nq = %d\nn = %lu\n", p, q, n);
+    printf("p = %'d\nq = %'d\nn = %'lu\n", p, q, n);
 
-    unsigned long phiN = (unsigned long)(p - 1) * (unsigned long)(q - 1);
 
-    printf("phi(n) = %lu\n", phiN);
+    if ( (p - 1) * (q - 1) > INT_MAX )
+    {
+        printf("Too large to store in int. edge case");
+        return -1;
+    }
+    
+    int phiN = (p - 1) * (q - 1);
+
+    printf("phi(n) = %'d\n", phiN);
+
+    int e;
+
+    /* 
+     * pick a random number within the range 1 < e < phiN
+     * which is also coprime with phiN
+    do
+    {
+    }while(1 < e && e < phiN);// && gcd(e, phiN) == 1)
+    p
+     */
+
+    do
+    {
+    e = (rand() % (phiN - 1 + 1)) + 1;
+    }while(gcd(e, phiN) != 1);
+    printf("Selected a value for e = %'d\n", e);
 
 
 
