@@ -9,11 +9,41 @@
 #define PRIME_MIN 50000
 #define PRIME_MAX 100000
 
+/*
+ * Used for storing the results of an
+ * extended euclidean algorithm
+ */
 typedef struct {
     long long int a;
     long long int x;
     long long int y;
 } Result;
+
+/*
+ * Stores the private exponent and
+ * key size which is the private key.
+ */
+typedef struct {
+    long long int d;
+    long long int n;
+} PrivateKey;
+
+/*
+ * Stores the public exponent and the
+ * key size which makes up the public key.
+ */
+typedef struct {
+    long long int e;
+    long long int n;
+} PublicKey;
+
+/*
+ * Stores the public and private key structs.
+ */
+typedef struct {
+    PrivateKey private;
+    PublicKey public;
+} KeyPair;
 
 int modularExponentiation(unsigned int M, unsigned int e, unsigned int n);
 Result extendedGcd(long long int a, long long int b);
@@ -274,6 +304,17 @@ int gcd(long long int a, long long int b)
     return gcd;
 }
 
+/*
+ * calculates the greatest common divisor of the
+ * provided integers a and b. Also works out the co-
+ * -efficients that satisfies the equation:
+ *  ax + by = gcd(a, b)
+ *
+ *  Returns a Result struct with:
+ *          a = GCD(a, b)
+ *          x = that satisfies the eqn for a
+ *          y =     "    "   "   "   "
+ */
 Result extendedGcd(long long int a, long long int b)
 {
     long long int oldx, oldy, x, y;
@@ -318,25 +359,7 @@ int main(void)
     setlocale(LC_NUMERIC, "");
     setbuf(stdout, NULL);
 
-    /*
-    if (value != -1)
-    {
-        printf("Found value = %d\n", value);
-    }
-
-    int primeToTest = 991;
-    bool isPrime = loopLehmann(primeToTest, 10);
-    if (isPrime)
-    {
-        printf("%d is a prime number.\n", primeToTest);
-    }
-    else
-    {
-        printf("%d is a prime number.\n", primeToTest);
-    }
-    
-    findPrime(900, 1000);
-    */
+    /* begin the key generation */
 
     /**
      * start the generation of the key
