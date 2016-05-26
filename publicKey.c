@@ -8,8 +8,8 @@
 #include<string.h>
 #include<tommath.h>
 
-#define PRIME_MIN 50000
-#define PRIME_MAX 100000
+#define PRIME_MIN 5
+#define PRIME_MAX 100
 
 /*
  * Used for storing the results of an
@@ -366,8 +366,10 @@ KeyPair generateKeyPair()
     }while(q == p);
     printf("\n");
 
-    p = 90547;
-    q = 95621;
+    //p = 90547;
+    //q = 95621;
+    p = 17;
+    q = 11;
 
     /* compute n */
     newPair.private.n = (long long int)p * (long long int)q;
@@ -388,7 +390,8 @@ KeyPair generateKeyPair()
         newPair.public.e = ((long long)rand() % ((long long)phiN - 1 + 1)) + 1;
     }while(isCoprime(newPair.public.e, phiN) != true);
     printf("Selected e value before force change is %'lli\n", newPair.public.e);
-    newPair.public.e = 455082247U;
+    newPair.public.e = 7;
+    //newPair.public.e = 455082247U;
 
     printf("Selected a value for e = %'lli\n", newPair.public.e);
 
@@ -405,6 +408,7 @@ KeyPair generateKeyPair()
      * add phiN to the value of d to it to
      * "flip" the modular clock so to speak
      */
+    newPair.private.d = newPair.private.d % phiN;
     if (newPair.private.d < 0)
     {
         newPair.private.d += phiN;
@@ -467,6 +471,28 @@ void encrypt(const char *plainPtr, PublicKey to, char **cipherText)
 
 
     int index = 0;
+    
+    /* ensure that the size of M is less than n */
+    int numChars;
+    int numToStore;
+    mp_radix_size(&n, 10, &numChars);
+    if (numChars < 3)
+    {
+        // can't even store one char here...
+    }
+    else
+    {
+        // how many chars can we store?
+        numToStore = (numChars / 3);
+
+        /* to be safe lets store one less than
+         * the max number we can */
+        if (numToStore > 1)
+        {
+            numToStore -= 1;
+        }
+    }
+    printf("size to store = %d\n", numToStore);
 
     /* shift the message by 1000 and add the most recent char */
     while (plainPtr[index] != '\0')
