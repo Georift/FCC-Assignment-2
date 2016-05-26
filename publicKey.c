@@ -107,7 +107,7 @@ long long int modularExponentiation(long long int M,
         long long int e, long long int n)
 {
     long long int c;
-    long long int largestPowerOf2 = sizeof(unsigned long) * 8;
+    long long int largestPowerOf2 = sizeof(unsigned long long) * 8;
 
     /** 
      * unsigned longs have a max size of 2^64 
@@ -387,6 +387,8 @@ KeyPair generateKeyPair()
     {
         newPair.public.e = ((long long)rand() % ((long long)phiN - 1 + 1)) + 1;
     }while(isCoprime(newPair.public.e, phiN) != true);
+    printf("Selected e value before force change is %'lli\n", newPair.public.e);
+    newPair.public.e = 455082247U;
 
     printf("Selected a value for e = %'lli\n", newPair.public.e);
 
@@ -575,15 +577,30 @@ void decrypt(char *cipherText, PrivateKey private, char **plaintext)
 
     mp_set_int(&shift, 1000);
     mp_set_int(&plain, 0);
-    mp_set_int(&d, private.d);
-    mp_set_int(&n, private.n);
+
+    //mp_set_int(&d, private.d);
+    char dString[64];
+    sprintf(dString, "%lli", private.d);
+    mp_read_radix(&d, dString, 10);
+    
+    //mp_set_int(&n, private.n);
+    char tmpString[64];
+    sprintf(tmpString, "%lli", private.n);
+    mp_read_radix(&n, tmpString, 10);
 
     mp_exptmod(&cipher, &d, &n, &plain);
 
     char block[16000];
     mp_toradix(&plain, (char *)&block, 10);
-
     printf("decrypted text: %s\n", block);
+
+    char dOut[16000];
+    mp_toradix(&d, (char *)&dOut, 10);
+    printf("d text: %s\n", dOut);
+
+    char nOut[16000];
+    mp_toradix(&n, (char *)&nOut, 10);
+    printf("n text: %s\n", nOut);
 }
 
 int main(void)
