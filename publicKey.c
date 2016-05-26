@@ -11,6 +11,8 @@
 #define PRIME_MIN 10000
 #define PRIME_MAX 100000
 
+#define DEBUG 0
+
 /*
  * Used for storing the results of an
  * extended euclidean algorithm
@@ -509,18 +511,21 @@ void encrypt(const char *plainPtr, PublicKey to, char **cipherText)
     /* message mp_int contains the entire message to encrypt */
     int sizeOfCipher;
 
-    char output[16000];
-    mp_toradix(&message, (char *)&output, 10);
-    printf("message for m = %s\n", output);
+    if (DEBUG == 1)
+    {
+        char output[16000];
+        mp_toradix(&message, (char *)&output, 10);
+        printf("message for m = %s\n", output);
 
-    
-    char output1[16000];
-    mp_toradix(&exp, (char *)&output1, 10);
-    printf("exp for m = %s\n", output1);
+        
+        char output1[16000];
+        mp_toradix(&exp, (char *)&output1, 10);
+        printf("exp for m = %s\n", output1);
 
-    char output2[16000];
-    mp_toradix(&n, (char *)&output2, 10);
-    printf("n for m = %s\n", output2);
+        char output2[16000];
+        mp_toradix(&n, (char *)&output2, 10);
+        printf("n for m = %s\n", output2);
+    }
     
 
     mp_exptmod(&message, &exp, &n, &cipher);
@@ -581,7 +586,7 @@ void encrypt(const char *plainPtr, PublicKey to, char **cipherText)
     */
 }
 
-void decrypt(char *cipherText, PrivateKey private, char **plaintext)
+void decrypt(char *cipherText, PrivateKey private, char **plainText)
 {
     mp_int cipher, plain, d, n, shift, charVal;
     int res;
@@ -594,12 +599,15 @@ void decrypt(char *cipherText, PrivateKey private, char **plaintext)
 
     mp_read_radix(&cipher, cipherText, 10);
 
-    char outputCipher[16000];
-    mp_toradix(&cipher, (char *)outputCipher, 10);
-    printf("input cipher = %s\n", outputCipher);
+    if (DEBUG == 1)
+    {
+        char outputCipher[16000];
+        mp_toradix(&cipher, (char *)outputCipher, 10);
+        printf("input cipher = %s\n", outputCipher);
 
-    printf("private.d = %lli\n", private.d);
-    printf("private.n = %lli\n", private.n);
+        printf("private.d = %lli\n", private.d);
+        printf("private.n = %lli\n", private.n);
+    }
 
     mp_set_int(&shift, 1000);
     mp_set_int(&plain, 0);
@@ -615,18 +623,66 @@ void decrypt(char *cipherText, PrivateKey private, char **plaintext)
     mp_read_radix(&n, tmpString, 10);
 
     mp_exptmod(&cipher, &d, &n, &plain);
+    char *tmpIntChar;
+    int sizeOfPlain;
 
-    char block[16000];
-    mp_toradix(&plain, (char *)&block, 10);
-    printf("decrypted text: %s\n", block);
+    /* convert the mp_int into a char array of int's */
+    if (mp_radix_size(&plain, 10, &sizeOfPlain) == MP_OKAY)
+    {
+        //printf("Creating char array of size %d\n", sizeOfCipher);
+        tmpIntChar = (char *)malloc(sizeof(char) * sizeOfPlain);
+        mp_toradix(&plain, tmpIntChar, 10);
+    }
 
-    char dOut[16000];
-    mp_toradix(&d, (char *)&dOut, 10);
-    printf("d text: %s\n", dOut);
+    char intText[16000];
+    mp_toradix(&plain, (char *)intText, 10);
+    printf("int text = %s\n", intText);
+    
 
-    char nOut[16000];
-    mp_toradix(&n, (char *)&nOut, 10);
-    printf("n text: %s\n", nOut);
+    /* convert the char array of int's back into plain text */
+
+    /* take into account stripped leading zero's */
+
+
+    unsigned long int plainInts = mp_get_int(&plain);
+    printf("plain ints = %09lu\n", plainInts);
+    int numChars = ceil((double)(sizeOfPlain - 1) / 3.0);
+    printf("num chars = %d\n", numChars);
+
+    *plainText = (char *)malloc(sizeof(char) * (numChars + 1));
+
+
+
+    int jj;
+    for (jj = numChars - 1; jj >= 0; jj--)
+    {
+        int tmpInt = 0;
+        tmpInt = plainInts % 10;
+        plainInts /= 10;
+
+        tmpInt += 10 * (plainInts % 10);
+        plainInts /= 10;
+
+        tmpInt += 100 * (plainInts % 10);
+        plainInts /= 10;
+
+        (*plainText)[jj] = (char)tmpInt;
+    }
+
+    if (DEBUG == 1)
+    {
+        char block[16000];
+        mp_toradix(&plain, (char *)&block, 10);
+        printf("decrypted text: %s\n", block);
+
+        char dOut[16000];
+        mp_toradix(&d, (char *)&dOut, 10);
+        printf("d text: %s\n", dOut);
+
+        char nOut[16000];
+        mp_toradix(&n, (char *)&nOut, 10);
+        printf("n text: %s\n", nOut);
+    }
 }
 
 int main(void)
@@ -661,6 +717,33 @@ int main(void)
     printf("Output cipher text = %s\n", cipher);
 
     decrypt(cipher, receiver.private, &plain);
+    printf("Output plaintext = %s\n", plain);
+
+    /*
+    int index = 0;
+    bool same = true;
+
+    while (index < 3)
+    {
+        if (plain[index] != plaintext[index])
+        {
+            same = false;
+        }
+        index++;
+    }
+
+    if (same == true)
+    {
+        printf("-----------------------------\n");
+        printf("Encryption/Decryption successful!!!!\n");
+    }
+    else
+    {
+        printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+        printf("Encryption/Decryption failed.\n");
+    }
+    */
+
 
     return 1;
 }
