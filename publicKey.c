@@ -16,6 +16,7 @@ typedef struct {
 } Result;
 
 int modularExponentiation(unsigned int M, unsigned int e, unsigned int n);
+Result extendedGcd(long long int a, long long int b);
 
 /**
  * find the binary sum of a number
@@ -213,6 +214,39 @@ int modularMultiplicativeInverse(int a, int m)
 }
 
 /*
+ * Performs the same function as the brute force was
+ * of finding the modular multiplicative inverse however
+ * it uses the extended euclidean algorithm to find it using:
+ * extendedGcd(a, m) = {a, x, y}
+ * we find the remaining is given by a
+ * the inverse is given by.
+ * NOTE: this will requre a and m to be coprime,
+ *       ie. have a gcd of 1.
+ */
+long long int gcdModularMultiplicativeInverse(long long int a, long long int m)
+{
+    Result extended = extendedGcd(a, m);
+    long long int retVal;
+
+    printf("input is a = %lli and b = %lli\n", a, m);
+
+    if (extended.a != 1)
+    {
+        // the values a and m are not coprime.
+        // ie. GCD(a, b) != 1
+        retVal = 0; // return an impossible value
+    }
+    else
+    {
+        retVal = extended.x;
+        printf("ext.a = %lli\next.x = %lli\next.y = %lli\n", 
+                extended.a, extended.x, extended.y);
+    }
+
+    return retVal;
+}
+
+/*
  * finds the greatest common divisor between two
  * numbers a and b.
  */
@@ -240,9 +274,9 @@ int gcd(long long int a, long long int b)
     return gcd;
 }
 
-Result extendedGcd(int a, int b)
+Result extendedGcd(long long int a, long long int b)
 {
-    int oldx, oldy, x, y;
+    long long int oldx, oldy, x, y;
     oldx = 1;
     oldy = 0;
     x = 0;
@@ -250,8 +284,8 @@ Result extendedGcd(int a, int b)
 
     while(b != 0)
     {
-        int q = a / b; // integer division.
-        int tmpx, tmpy, tmpa;
+        long long int q = a / b; // integer division.
+        long long int tmpx, tmpy, tmpa;
 
         tmpx = x;
         tmpy = y;
@@ -285,7 +319,6 @@ int main(void)
     setbuf(stdout, NULL);
 
     /*
-    value = modularExponentiation(198, 219469, 3921);
     if (value != -1)
     {
         printf("Found value = %d\n", value);
@@ -358,8 +391,26 @@ int main(void)
     }while(gcd(e, phiN) != 1);
     printf("Selected a value for e = %'lli\n", e);
 
-    Result ext = extendedGcd(42823, 6409);
+    /*
+    Result ext = extendedGcd(35, 15);
     printf("ext.a = %lli\next.x = %lli\next.y = %lli\n", ext.a, ext.x, ext.y);
+    */
+
+    /* try and solve for d using the extended euclidean algorithm
+     * to find the modular muliplicative inverse. */
+    long long int d = gcdModularMultiplicativeInverse(e, phiN);
+
+    /*
+     sanity check 
+    if (ext.a != 1)
+    {
+          e and phiN are not coprime 
+          * this shouldn't happen as it 
+          * can't have broken out of 
+          * the while loop
+    }*/
+
+    printf("We have found d = %'lli\n", d);
 
 
     return 1;
