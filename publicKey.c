@@ -699,6 +699,7 @@ int main(void)
     receiver = generateKeyPair();
 
     char plaintext[9] = {"Tes"};
+    printf("Input plain text = %s\n", plaintext);
     
     /* 
      * this will be malloc'ed during the encryption
@@ -719,7 +720,6 @@ int main(void)
     decrypt(cipher, receiver.private, &plain);
     printf("Output plaintext = %s\n", plain);
 
-    /*
     int index = 0;
     bool same = true;
 
@@ -742,7 +742,6 @@ int main(void)
         printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
         printf("Encryption/Decryption failed.\n");
     }
-    */
 
 
     return 1;
