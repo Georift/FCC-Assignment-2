@@ -426,83 +426,115 @@ KeyPair generateKeyPair()
  */
 void encrypt(const char *plainPtr, int length, PublicKey to)
 {
+    /*
     int ii;
     const int charSplit = 3;
     long long int message[(length / charSplit) + 1];
+    */
 
-    for (ii = 0; ii < (length / charSplit) + 1; ii++)
+    mp_int result, message, exp, n, shift, charVal, cipher;
+    int res;
+    if ((res = mp_init_multi(&result, &message, &exp, 
+                    &charVal, &n, &shift, &cipher, NULL)) != MP_OKAY)
     {
-        message[ii] = 0;
+        printf("Error initilising the number. %s\n", 
+                mp_error_to_string(res));
     }
 
-    for (ii = 0; ii < length; ii++)
+    mp_set_int(&shift, 1000);
+    mp_set_int(&message, 0);
+    mp_set_int(&exp, to.e);
+    mp_set_int(&n, to.n);
+
+    int index = 0;
+
+    /* shift the message by 1000 and add the most recent char */
+    while (plainPtr[index] != '\0')
     {
-        //printf("Adding to M%d\n", (ii / charSplit));
+        mp_set_int(&charVal, (int)plainPtr[index]);
 
-        //printf("%c = %03d\n", plainPtr[ii], plainPtr[ii]);
-
-        message[ii / charSplit] = message[ii / charSplit] * 1000;
-        message[ii / charSplit] += (long long int)plainPtr[ii];
-
-        //printf("%018lli\n", message[ii / charSplit]);
+        mp_mul(&message, &shift, &message);
+        mp_add(&message, &charVal, &message);
+        /*printf("added %c to number it has a value %lu\n", 
+                plainPtr[index], mp_get_int(&charVal));*/
+        index++;
     }
 
-    /* 
-     * messages[] now contains (length / 6) + 1 integers
-     * which we can now perform encryption on using
-     * modular exponentiation on.
-     */
-    for (ii = 0; ii < (length / charSplit) + 1; ii++)
+    /* message mp_int contains the entire message to encrypt */
+    int sizeOfCipher;
+    char *cipherText;
+
+    char output[16000];
+    mp_toradix(&message, (char *)&output, 10);
+    printf("message for m = %s\n", output);
+
+    char output1[16000];
+    mp_toradix(&exp, (char *)&output1, 10);
+    printf("exp for m = %s\n", output1);
+
+    char output2[16000];
+    mp_toradix(&n, (char *)&output2, 10);
+    printf("n for m = %s\n", output2);
+
+    mp_exptmod(&message, &exp, &n, &cipher);
+
+    if (mp_radix_size(&cipher, 10, &sizeOfCipher) == MP_OKAY)
     {
-        //printf("doing message[%d]\ne = %lli\nn = %lli\n", ii, to.e, to.n);
-        //printf("message = %09lli\n", message[ii]);
-        //printf("%lli\n", modularExponentiation(message[ii], to.e, to.n));
+        printf("Creating char array of size %d\n", sizeOfCipher);
+        cipherText = (char *)malloc(sizeof(char) * sizeOfCipher);
 
-        mp_int result, messageHolder, exp, n;
-        int resultCode;
-
-        if ((resultCode = mp_init_multi(&result, &messageHolder, &exp, &n, NULL)) 
-                != MP_OKAY)
-        {
-            printf("Error initilising the number. %s\n", 
-                    mp_error_to_string(resultCode));
-        }
-
-        mp_set_int(&messageHolder, message[ii]);
-        mp_set_int(&exp, to.e);
-        mp_set_int(&n, to.n);
-
-        mp_exptmod(&messageHolder, &exp, &n, &result);
-
-        bool debug = false;
-        if (debug == true)
-        {
-            char output[16000];
-            mp_toradix(&result, (char *)&output, 10);
-            printf("cipher for m%d = %s\n", ii, output);
-            
-            char output1[16000];
-            mp_toradix(&exp, (char *)&output1, 10);
-            printf("exp for m%d = %s\n", ii, output1);
-
-            char output2[16000];
-            mp_toradix(&n, (char *)&output2, 10);
-            printf("n for m%d = %s\n", ii, output2);
-
-            char output3[16000];
-            mp_toradix(&messageHolder, (char *)&output3, 10);
-            printf("message for m%d = %s\n", ii, output3);
-        }
-
-        /* convert this round to base 10 and output */
-        char block[16000];
-        mp_toradix(&result, (char *)&block, 10);
-
-        printf("%s ", block);
-
+        mp_toradix(&cipher, cipherText, 10);
     }
+
+    printf("%s\n", cipherText);
+
+    
+
+    /*
+    message[ii / charSplit] = message[ii / charSplit] * 1000;
+    message[ii / charSplit] += (long long int)plainPtr[ii];
+
+    mp_int result, messageHolder, exp, n;
+    int resultCode;
+
+    if ((resultCode = mp_init_multi(&result, &messageHolder, &exp, &n, NULL)) 
+            != MP_OKAY)
+    {
+        printf("Error initilising the number. %s\n", 
+                mp_error_to_string(resultCode));
+    }
+
+
+    mp_exptmod(&messageHolder, &exp, &n, &result);
+
+    bool debug = false;
+    if (debug == true)
+    {
+        char output[16000];
+        mp_toradix(&result, (char *)&output, 10);
+        printf("cipher for m%d = %s\n", ii, output);
+
+        char output1[16000];
+        mp_toradix(&exp, (char *)&output1, 10);
+        printf("exp for m%d = %s\n", ii, output1);
+
+        char output2[16000];
+        mp_toradix(&n, (char *)&output2, 10);
+        printf("n for m%d = %s\n", ii, output2);
+
+        char output3[16000];
+        mp_toradix(&messageHolder, (char *)&output3, 10);
+        printf("message for m%d = %s\n", ii, output3);
+    }
+
+    * convert this round to base 10 and output *
+    char block[16000];
+    mp_toradix(&result, (char *)&block, 10);
+
+    printf("%s ", block);
 
     printf("\n");
+    */
 }
 
 int main(void)
@@ -518,7 +550,7 @@ int main(void)
     //sender = generateKeyPair();
     receiver = generateKeyPair();
 
-    char plaintext[8] = {"Testing"};
+    char plaintext[9] = {"TestingT"};
 
     /* encrypt the message for the receiver */
     encrypt((char *)&plaintext, strlen(plaintext), receiver.public);
