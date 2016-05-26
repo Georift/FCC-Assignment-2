@@ -9,6 +9,12 @@
 #define PRIME_MIN 50000
 #define PRIME_MAX 100000
 
+typedef struct {
+    long long int a;
+    long long int x;
+    long long int y;
+} Result;
+
 int modularExponentiation(unsigned int M, unsigned int e, unsigned int n);
 
 /**
@@ -234,6 +240,43 @@ int gcd(long long int a, long long int b)
     return gcd;
 }
 
+Result extendedGcd(int a, int b)
+{
+    int oldx, oldy, x, y;
+    oldx = 1;
+    oldy = 0;
+    x = 0;
+    y = 1;
+
+    while(b != 0)
+    {
+        int q = a / b; // integer division.
+        int tmpx, tmpy, tmpa;
+
+        tmpx = x;
+        tmpy = y;
+        tmpa = a;
+
+        x = oldx - q * x; // calculate new x
+        oldx = tmpx; // and store the old in oldx
+
+        y = oldy - q*y; // calculte new y
+        oldy = tmpy; // and store the old in oldy
+
+        a = b;
+        b = tmpa % b;
+    }
+
+    /* create a struct for returning
+     * the three variables */
+    Result output;
+    output.a = a;
+    output.x = oldx;
+    output.y = oldy;
+
+    return output;
+}
+
 int main(void)
 {
     /* setup functions for external libraries*/
@@ -299,15 +342,6 @@ int main(void)
 
     printf("We have the following values:\n");
     printf("p = %'d\nq = %'d\nn = %'lli\n", p, q, n);
-
-
-    /* shouldn't havent given a reduce size of PRIME_MAX
-     * 46000 */
-    if ( (p - 1) * (q - 1) > INT_MAX )
-    {
-        printf("Too large to store in int. edge case");
-        return -1;
-    }
     
     /* compute the value of phiN */
     long long int phiN = (long long)(p - 1) * (long long)(q - 1);
@@ -324,7 +358,8 @@ int main(void)
     }while(gcd(e, phiN) != 1);
     printf("Selected a value for e = %'lli\n", e);
 
-
+    Result ext = extendedGcd(42823, 6409);
+    printf("ext.a = %lli\next.x = %lli\next.y = %lli\n", ext.a, ext.x, ext.y);
 
 
     return 1;
