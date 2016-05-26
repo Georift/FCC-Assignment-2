@@ -8,8 +8,8 @@
 #include<string.h>
 #include<tommath.h>
 
-#define PRIME_MIN 5
-#define PRIME_MAX 100
+#define PRIME_MIN 10000
+#define PRIME_MAX 100000
 
 /*
  * Used for storing the results of an
@@ -368,8 +368,8 @@ KeyPair generateKeyPair()
 
     //p = 90547;
     //q = 95621;
-    p = 17;
-    q = 11;
+    //p = 17;
+    //q = 11;
 
     /* compute n */
     newPair.private.n = (long long int)p * (long long int)q;
@@ -390,7 +390,7 @@ KeyPair generateKeyPair()
         newPair.public.e = ((long long)rand() % ((long long)phiN - 1 + 1)) + 1;
     }while(isCoprime(newPair.public.e, phiN) != true);
     printf("Selected e value before force change is %'lli\n", newPair.public.e);
-    newPair.public.e = 7;
+    //newPair.public.e = 7;
     //newPair.public.e = 455082247U;
 
     printf("Selected a value for e = %'lli\n", newPair.public.e);
@@ -642,7 +642,7 @@ int main(void)
     //sender = generateKeyPair();
     receiver = generateKeyPair();
 
-    char plaintext[9] = {"TestingT"};
+    char plaintext[9] = {"Tes"};
     
     /* 
      * this will be malloc'ed during the encryption
