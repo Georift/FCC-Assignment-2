@@ -317,15 +317,16 @@ bool isCoprime(long long int a, long long int b)
     return coprime;
 }
 
-int main(void)
+/*
+ * generate a keypair and return the
+ * private and public key in the KeyPair
+ * structure.
+ *
+ * NOTE: you must seed the random number
+ *       generator before generating a keypair
+ */
+KeyPair generateKeyPair()
 {
-    /* setup functions for external libraries*/
-    srand(time(NULL));
-    setlocale(LC_NUMERIC, "");
-    setbuf(stdout, NULL);
-
-    /* begin the key generation */
-
     /**
      * start the generation of the key
      * 1. pick two prime numbers p and q
@@ -335,8 +336,8 @@ int main(void)
      * 5. find d given d.e = 1(mod phi(n))
      */
 
+    KeyPair newPair;
     int p, q;
-    long long n;
 
     printf("Generating primes.");
     /* select two distinct primes p and q */
@@ -359,10 +360,11 @@ int main(void)
     printf("\n");
 
     /* compute n */
-    n = (long long)p * (long long)q;
+    newPair.private.n = (long long)p * (long long)q;
+    newPair.public.n = newPair.private.n;
 
     printf("We have the following values:\n");
-    printf("p = %'d\nq = %'d\nn = %'lli\n", p, q, n);
+    printf("p = %'d\nq = %'d\nn = %'lli\n", p, q, newPair.private.n);
     
     /* compute the value of phiN */
     long long int phiN = (long long)(p - 1) * (long long)(q - 1);
@@ -371,13 +373,12 @@ int main(void)
 
     /* pick a value for e such that 
      * 1 < e < phiN and GCD(e, phiN) == 1*/
-    long long int e;
-
     do
     {
-        e = ((long long)rand() % ((long long)phiN - 1 + 1)) + 1;
-    }while(isCoprime(e, phiN) != true);
-    printf("Selected a value for e = %'lli\n", e);
+        newPair.public.e = ((long long)rand() % ((long long)phiN - 1 + 1)) + 1;
+    }while(isCoprime(newPair.public.e, phiN) != true);
+
+    printf("Selected a value for e = %'lli\n", newPair.public.e);
 
     /*
     Result ext = extendedGcd(35, 15);
@@ -386,29 +387,37 @@ int main(void)
 
     /* try and solve for d using the extended euclidean algorithm
      * to find the modular muliplicative inverse. */
-    long long int d = gcdModularMultiplicativeInverse(e, phiN);
+    newPair.private.d = gcdModularMultiplicativeInverse(newPair.public.e, phiN);
 
     /* we have found a negative inverse.
      * add phiN to the value of d to it to
      * "flip" the modular clock so to speak
      */
-    if (d < 0)
+    if (newPair.private.d < 0)
     {
-        d += phiN;
+        newPair.private.d += phiN;
     }
 
-    /*
-     sanity check 
-    if (ext.a != 1)
+    printf("We have found d = %'lli\n", newPair.private.d);
+
+    return newPair;
+}
+
+int main(void)
+{
+    /* setup functions for external libraries*/
+    srand(time(NULL));
+    setlocale(LC_NUMERIC, "");
+    setbuf(stdout, NULL);
+
+    KeyPair sender, receiver;
+
+    sender = generateKeyPair();
+    receiver = generateKeyPair();
+    
+    if (sender.public.e == 1 && receiver.public.e == 1)
     {
-          e and phiN are not coprime 
-          * this shouldn't happen as it 
-          * can't have broken out of 
-          * the while loop
-    }*/
 
-    printf("We have found d = %'lli\n", d);
-
-
+    }
     return 1;
 }
