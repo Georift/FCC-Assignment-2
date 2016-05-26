@@ -690,7 +690,7 @@ void decrypt(char *cipherText, PrivateKey private, char **plainText)
 void encryptFile(FILE *in, FILE* out, KeyPair receiver)
 {
     /* print header to encrypted content */
-    fprintf(out, "=============================RSA Encrypted DATA=============================\n");
+    //fprintf(out, "=============================RSA Encrypted DATA=============================\n");
 
     /* mp_int ready for n */
     mp_int n;
@@ -752,7 +752,55 @@ void encryptFile(FILE *in, FILE* out, KeyPair receiver)
         toEncrypt[curFilled] = c;
         curFilled++;
     }
-    fprintf(out, "\n=============================RSA Encrypted DATA=============================");
+    //fprintf(out, "\n=============================RSA Encrypted DATA=============================");
+}
+
+void decryptFile(FILE *in, FILE* out, KeyPair receiver)
+{
+    int numChars;
+    fscanf(in, "%d", &numChars);
+    printf("There at %d chars per 'block' \n", numChars);
+
+    unsigned long value;
+
+    while (fscanf(in, "%lu", &value) != EOF)
+    {
+        printf("%lu\n", value);
+        char string[13]; // TODO decide on 13
+        sprintf(string, "%lu", value);
+
+        char *plainText;
+
+        decrypt((char *)&string, receiver.private, &plainText);
+
+        fprintf(out, "%s", plainText);
+    }
+
+    /*
+    char *toEncrypt = (char *)malloc(sizeof(char) * (numChars + 1));
+    int curFilled = 0;
+
+    char c;
+    while(( c = fgetc(in) ) != EOF)
+    {
+        if (curFilled == numChars)
+        {
+            toEncrypt[curFilled + 1] = '\0';
+           * process this encryption *
+            char *cipher = NULL;
+            encrypt((char *)toEncrypt, receiver.public, &cipher);
+
+            fprintf(out, "%s ", cipher);
+            curFilled = 0;
+            free(toEncrypt);
+            toEncrypt = (char *)malloc(sizeof(char) * (numChars + 1));
+        }
+
+        printf("%c\n", c);
+        toEncrypt[curFilled] = c;
+        curFilled++;
+    }
+    */
 }
 
 int main(void)
@@ -776,8 +824,18 @@ int main(void)
     fclose(in);
     fclose(out);
 
+    in = fopen("output", "r");
+    out = fopen("decrypted", "w+");
+
+    decryptFile(in, out, receiver);
+
+    fclose(in);
+    fclose(out);
+
+    /*
     char plaintext[9] = {"Tes"};
     printf("Input plain text = %s\n", plaintext);
+    */
     
     /* 
      * this will be malloc'ed during the encryption
