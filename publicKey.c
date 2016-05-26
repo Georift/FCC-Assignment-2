@@ -109,25 +109,60 @@ int modularExponentiation(int M, int e, int n)
  * attempts to find a prime within the
  * range provided.
  *
- * returns -1 on error/not found
- *         prime number.
+ * returns the prime number
+ *         -1 if range is larger than RAND_MAX
  */
 int findPrime(int start, int end)
 {
-    int retVal = -1;
-    if (start < end)
-    {
-        int jj;
-        for (jj = start; jj <= end; jj++)
-        {
-            if (loopLehmann(jj, 10) == true)
-            {
-                printf("Found a prime %d\n", jj);
-            }
-        }
-    }
+    int possiblePrime;
+    bool foundPrime = false;
 
-    return retVal;
+    do
+    {
+        /**
+         * continue to pull random numbers until
+         * it calls within our range.
+         *
+         * This is done instead of simply using modulus
+         * to ensure we are given a uniform probability.
+         */
+
+
+        /*
+         * TODO If I get time try and implement a fully uniform random number
+         * generation
+        printf("RAND_MAX = %d\nUnsigned long = %lu\n", RAND_MAX, (unsigned long)pow(2, sizeof(unsigned long) * 8));
+        do
+        {
+            possiblePrime = rand();    
+            printf("testing number %lu, int max is %d\n", possiblePrime, (int)pow(2, 16));
+        }while (possiblePrime >= (unsigned long)start && possiblePrime <= (unsigned long)end);
+
+        printf("Found a prime between %d and %d which is %lu\n", start, end, possiblePrime);
+        */
+
+        possiblePrime = (rand() % (end - start + 1)) + start;
+
+        /* test if this is a prime number */
+        if (loopLehmann(possiblePrime, 10) == true)
+        {
+            foundPrime = true;
+        }
+
+        /* 
+         * add a check to ensure we can actually generate
+         * numbers large enough for our range.
+         * Returns -1 if it's not valid
+         */
+        if (end > RAND_MAX)
+        {
+            foundPrime = true;
+            possiblePrime = -1;
+        }
+
+    }while(foundPrime == false);
+
+    return (int)possiblePrime;
 }
 
 /**
@@ -169,10 +204,11 @@ int modularMultiplicativeInverse(int a, int m)
 
 int main(void)
 {
-    int value;
-    setlocale(LC_NUMERIC, "");
+    /* setup functions for external libraries*/
     srand(time(NULL));
+    setlocale(LC_NUMERIC, "");
 
+    /*
     value = modularExponentiation(198, 219469, 3921);
     if (value != -1)
     {
@@ -191,6 +227,22 @@ int main(void)
     }
     
     findPrime(900, 1000);
+    */
+
+    /**
+     * start the generation of the key
+     * 1. pick two prime numbers p and q
+     * 2. generate n from n = p.q
+     * 3. compute phi(n) from n - (p + q - 1)
+     * 4. pick a value for e such that 1 < e < phi(n)
+     * 5. find d given d.e = 1(mod phi(n))
+     */
+
+    int ii;
+    for (ii = 0; ii < 10; ii++)
+    {
+        printf("Generated prime: %d\n", findPrime(10000, 100000));
+    }
 
     return 1;
 }
