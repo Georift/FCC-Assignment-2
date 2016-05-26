@@ -11,7 +11,7 @@
 #define PRIME_MIN 10000
 #define PRIME_MAX 100000
 
-#define DEBUG 0
+#define DEBUG 1
 
 /*
  * Used for storing the results of an
@@ -442,6 +442,8 @@ void encrypt(const char *plainPtr, PublicKey to, char **cipherText)
     long long int message[(length / charSplit) + 1];
     */
 
+    printf("%s\n", plainPtr);
+
     mp_int result, message, exp, n, shift, charVal, cipher;
     int res;
     if ((res = mp_init_multi(&result, &message, &exp, 
@@ -491,10 +493,10 @@ void encrypt(const char *plainPtr, PublicKey to, char **cipherText)
          * the max number we can */
         if (numToStore > 1)
         {
-            numToStore -= 1;
+            //numToStore -= 1;
         }
     }
-    printf("size to store = %d\n", numToStore);
+    //printf("size to store = %d\n", numToStore);
 
     /* shift the message by 1000 and add the most recent char */
     while (plainPtr[index] != '\0')
@@ -685,6 +687,74 @@ void decrypt(char *cipherText, PrivateKey private, char **plainText)
     }
 }
 
+void encryptFile(FILE *in, FILE* out, KeyPair receiver)
+{
+    /* print header to encrypted content */
+    fprintf(out, "=============================RSA Encrypted DATA=============================\n");
+
+    /* mp_int ready for n */
+    mp_int n;
+    int res;
+    if ((res = mp_init(&n)) != MP_OKAY)
+    {
+        printf("Error initilising the number. %s\n", 
+                mp_error_to_string(res));
+    }
+
+    /* load it in */
+    char tmpString[64];
+    sprintf(tmpString, "%lli", receiver.private.n);
+    mp_read_radix(&n, tmpString, 10);
+
+    /* calculate how large we can store in each encryption */
+    int numChars;
+    int numToStore;
+    mp_radix_size(&n, 10, &numChars);
+    if (numChars < 3)
+    {
+        // can't even store one char here...
+    }
+    else
+    {
+        // how many chars can we store?
+        numToStore = (numChars / 3);
+
+        /* to be safe lets store one less than
+         * the max number we can */
+        if (numToStore > 1)
+        {
+            //numToStore -= 1;
+        }
+    }
+    fprintf(out, "%d ", numToStore);
+    printf("size to store = %d\n", numToStore);
+
+    char *toEncrypt = (char *)malloc(sizeof(char) * (numToStore + 1));
+    int curFilled = 0;
+
+    char c;
+    while(( c = fgetc(in) ) != EOF)
+    {
+        if (curFilled == numToStore)
+        {
+            toEncrypt[curFilled + 1] = '\0';
+            /* process this encryption */
+            char *cipher = NULL;
+            encrypt((char *)toEncrypt, receiver.public, &cipher);
+
+            fprintf(out, "%s ", cipher);
+            curFilled = 0;
+            free(toEncrypt);
+            toEncrypt = (char *)malloc(sizeof(char) * (numToStore + 1));
+        }
+
+        printf("%c\n", c);
+        toEncrypt[curFilled] = c;
+        curFilled++;
+    }
+    fprintf(out, "\n=============================RSA Encrypted DATA=============================");
+}
+
 int main(void)
 {
     /* setup functions for external libraries*/
@@ -692,11 +762,19 @@ int main(void)
     setlocale(LC_NUMERIC, "");
     setbuf(stdout, NULL);
 
-    //KeyPair sender;
+    /* generate the keypair for the receiver
+     * we aren't goint to sign so sender's isn't required. */
     KeyPair receiver;
-
-    //sender = generateKeyPair();
     receiver = generateKeyPair();
+
+    FILE *in, *out;
+    in = fopen("input", "r");
+    out = fopen("output", "w+");
+
+    encryptFile(in, out, receiver);
+
+    fclose(in);
+    fclose(out);
 
     char plaintext[9] = {"Tes"};
     printf("Input plain text = %s\n", plaintext);
@@ -704,7 +782,7 @@ int main(void)
     /* 
      * this will be malloc'ed during the encryption
      * function call
-     */
+     *
     char *cipher = NULL;
     char *plain = NULL;
 
@@ -712,7 +790,7 @@ int main(void)
     printf("public.n = %lli\n", receiver.public.n);
 
 
-    /* encrypt the message for the receiver */
+     encrypt the message for the receiver 
     encrypt((char *)&plaintext, receiver.public, &cipher);
 
     printf("Output cipher text = %s\n", cipher);
@@ -742,6 +820,7 @@ int main(void)
         printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
         printf("Encryption/Decryption failed.\n");
     }
+    */
 
 
     return 1;
