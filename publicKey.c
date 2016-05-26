@@ -6,9 +6,8 @@
 #include<stdbool.h>
 #include<limits.h>
 
-#define PRIME_MIN 10000
-#define PRIME_MAX 46000
-//#define PRIME_MAX 100000
+#define PRIME_MIN 50000
+#define PRIME_MAX 100000
 
 int modularExponentiation(unsigned int M, unsigned int e, unsigned int n);
 
@@ -79,8 +78,8 @@ bool loopLehmann(int p, int t)
  */
 int modularExponentiation(unsigned int M, unsigned int e, unsigned int n)
 {
-    unsigned long c;
-    int largestPowerOf2 = sizeof(unsigned long) * 8;
+    unsigned long long c;
+    long long int largestPowerOf2 = sizeof(unsigned long) * 8;
 
     /** 
      * unsigned longs have a max size of 2^64 
@@ -91,8 +90,8 @@ int modularExponentiation(unsigned int M, unsigned int e, unsigned int n)
      * to break it up into smaller pieces. */
     if (powerOfBase2(M, e) >= largestPowerOf2)
     {
-        int modProduct = 1;
-        int remainingPower = e;
+        long long int modProduct = 1;
+        long long int remainingPower = e;
 
         /* check if it's even and split it */
         modProduct *= modularExponentiation(M, (remainingPower/2), n);
@@ -104,7 +103,7 @@ int modularExponentiation(unsigned int M, unsigned int e, unsigned int n)
     }
     else
     {
-        c = (unsigned long)pow((double)M, (double)e) % n;
+        c = (long long)pow((long long)M, (long long)e) % (long long)n;
     }
     
     return c;
@@ -211,7 +210,7 @@ int modularMultiplicativeInverse(int a, int m)
  * finds the greatest common divisor between two
  * numbers a and b.
  */
-int gcd(int a, int b)
+int gcd(long long int a, long long int b)
 {
     int gcd;
     while (a != 0 && b != 0)
@@ -226,10 +225,10 @@ int gcd(int a, int b)
         }
     }
 
-    gcd = b;
+    gcd = (int) b;
     if (a > b)
     {
-        gcd = a;
+        gcd = (int) a;
     }
 
     return gcd;
@@ -273,7 +272,7 @@ int main(void)
      */
 
     int p, q;
-    unsigned long n;
+    long long n;
 
     printf("Generating primes.");
     /* select two distinct primes p and q */
@@ -296,38 +295,35 @@ int main(void)
     printf("\n");
 
     /* compute n */
-    n = p * q;
+    n = (long long)p * (long long)q;
 
     printf("We have the following values:\n");
-    printf("p = %'d\nq = %'d\nn = %'lu\n", p, q, n);
+    printf("p = %'d\nq = %'d\nn = %'lli\n", p, q, n);
 
 
+    /* shouldn't havent given a reduce size of PRIME_MAX
+     * 46000 */
     if ( (p - 1) * (q - 1) > INT_MAX )
     {
         printf("Too large to store in int. edge case");
         return -1;
     }
     
-    int phiN = (p - 1) * (q - 1);
+    /* compute the value of phiN */
+    long long int phiN = (long long)(p - 1) * (long long)(q - 1);
 
-    printf("phi(n) = %'d\n", phiN);
+    printf("phi(n) = %'lli\n", phiN);
 
-    int e;
-
-    /* 
-     * pick a random number within the range 1 < e < phiN
-     * which is also coprime with phiN
-    do
-    {
-    }while(1 < e && e < phiN);// && gcd(e, phiN) == 1)
-    p
-     */
+    /* pick a value for e such that 
+     * 1 < e < phiN and GCD(e, phiN) == 1*/
+    long long int e;
 
     do
     {
-    e = (rand() % (phiN - 1 + 1)) + 1;
+        e = ((long long)rand() % ((long long)phiN - 1 + 1)) + 1;
     }while(gcd(e, phiN) != 1);
-    printf("Selected a value for e = %'d\n", e);
+    printf("Selected a value for e = %'lli\n", e);
+
 
 
 
