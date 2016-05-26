@@ -56,7 +56,7 @@ bool loopLehmann(int p, int t)
     for(ii = 0; ii < t; ii++)
     {
         int result = lehmann(p);
-        if (result != 1 && result != (result - 1))
+        if (result != 1 && result != (p - 1))
         {
             prime = false; 
         }
@@ -128,6 +128,43 @@ int findPrime(int start, int end)
     }
 
     return retVal;
+}
+
+/**
+ * Find a value x such that:
+ * a.x = 1 mod m
+ * x is the modular multiplicative.
+ *
+ * @returns 0 on error otherwise value of x
+ * NOTE: Code taken from previously submitted
+ *       assignment #1 written by my.
+ */
+int modularMultiplicativeInverse(int a, int m)
+{
+    bool foundInverse = false;
+    int inverse = 0;
+    int index = 0;
+
+    while (foundInverse == false)
+    {
+        int tempCalc;
+
+        tempCalc = ((a * index) % m);
+        if (tempCalc == 1)
+        {
+            inverse = index;
+            foundInverse = true;
+        }
+
+        index++;
+        if (index == m)
+        {
+            /* this shouldn't ever happen... */
+            inverse = 0; /* signifies an error */
+        }
+    }
+
+    return inverse;
 }
 
 int main(void)
