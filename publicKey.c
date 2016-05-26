@@ -48,22 +48,6 @@ typedef struct {
 int modularExponentiation(unsigned int M, unsigned int e, unsigned int n);
 Result extendedGcd(long long int a, long long int b);
 
-/**
- * find the binary sum of a number
- */
-void printBinarySum(unsigned long num)
-{
-    /* work out where to start from */
-    int remaining = num;
-    int jj;
-    for (jj = floor(sqrt(num)); jj >= 0; jj--)
-    {
-        // check how many 2^{jj} we can remove
-        int count = remaining / (int)pow(2.0, jj);
-        remaining = remaining - (count * (int)pow(2.0, jj));
-    } 
-}
-
 /*
  * using the formula:
  * base^exponent = 2^x
@@ -206,43 +190,6 @@ int findPrime(int start, int end)
     return (int)possiblePrime;
 }
 
-/**
- * Find a value x such that:
- * a.x = 1 mod m
- * x is the modular multiplicative.
- *
- * @returns 0 on error otherwise value of x
- * NOTE: Code taken from previously submitted
- *       assignment #1 written by my.
- */
-int modularMultiplicativeInverse(int a, int m)
-{
-    bool foundInverse = false;
-    int inverse = 0;
-    int index = 0;
-
-    while (foundInverse == false)
-    {
-        int tempCalc;
-
-        tempCalc = ((a * index) % m);
-        if (tempCalc == 1)
-        {
-            inverse = index;
-            foundInverse = true;
-        }
-
-        index++;
-        if (index == m)
-        {
-            /* this shouldn't ever happen... */
-            inverse = 0; /* signifies an error */
-        }
-    }
-
-    return inverse;
-}
-
 /*
  * Performs the same function as the brute force was
  * of finding the modular multiplicative inverse however
@@ -352,6 +299,24 @@ Result extendedGcd(long long int a, long long int b)
     return output;
 }
 
+/*
+ * using the extended euclidean algorithm check
+ * if the pair of passed in integers is coprime
+ * through GCD(a, b) == 1.
+ */
+bool isCoprime(long long int a, long long int b)
+{
+    bool coprime = false;
+    Result gcd = extendedGcd(a, b);
+
+    if (gcd.a == 1)
+    {
+        coprime = true;
+    }
+
+    return coprime;
+}
+
 int main(void)
 {
     /* setup functions for external libraries*/
@@ -411,7 +376,7 @@ int main(void)
     do
     {
         e = ((long long)rand() % ((long long)phiN - 1 + 1)) + 1;
-    }while(gcd(e, phiN) != 1);
+    }while(isCoprime(e, phiN) != true);
     printf("Selected a value for e = %'lli\n", e);
 
     /*
@@ -422,6 +387,15 @@ int main(void)
     /* try and solve for d using the extended euclidean algorithm
      * to find the modular muliplicative inverse. */
     long long int d = gcdModularMultiplicativeInverse(e, phiN);
+
+    /* we have found a negative inverse.
+     * add phiN to the value of d to it to
+     * "flip" the modular clock so to speak
+     */
+    if (d < 0)
+    {
+        d += phiN;
+    }
 
     /*
      sanity check 
