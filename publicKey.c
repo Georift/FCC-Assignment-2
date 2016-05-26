@@ -5,6 +5,9 @@
 #include<stdlib.h>
 #include<stdbool.h>
 
+#define PRIME_MIN 10000
+#define PRIME_MAX 100000
+
 int modularExponentiation(int M, int e, int n);
 
 /**
@@ -140,7 +143,7 @@ int findPrime(int start, int end)
 
         printf("Found a prime between %d and %d which is %lu\n", start, end, possiblePrime);
         */
-
+        printf(".");
         possiblePrime = (rand() % (end - start + 1)) + start;
 
         /* test if this is a prime number */
@@ -207,6 +210,7 @@ int main(void)
     /* setup functions for external libraries*/
     srand(time(NULL));
     setlocale(LC_NUMERIC, "");
+    setbuf(stdout, NULL);
 
     /*
     value = modularExponentiation(198, 219469, 3921);
@@ -238,11 +242,40 @@ int main(void)
      * 5. find d given d.e = 1(mod phi(n))
      */
 
-    int ii;
-    for (ii = 0; ii < 10; ii++)
+    int p, q;
+    unsigned long n;
+
+    printf("Generating primes.");
+    /* select two distinct primes p and q */
+    p = findPrime(PRIME_MIN, PRIME_MAX);
+    printf("found p");
+
+    q = 0;
+    do
     {
-        printf("Generated prime: %d\n", findPrime(10000, 100000));
-    }
+        /* check if this is the first run, 
+         * if not, we rejected q */
+        if (q != 0)
+        {
+            printf(".q rejected");
+        }
+
+        q = findPrime(PRIME_MIN, PRIME_MAX);
+        printf("found q");
+    }while(q == p);
+    printf("\n");
+
+    /* compute n */
+    n = p * q;
+
+    printf("We have the following values:\n");
+    printf("p = %d\nq = %d\nn = %lu\n", p, q, n);
+
+    unsigned long phiN = (unsigned long)(p - 1) * (unsigned long)(q - 1);
+
+    printf("phi(n) = %lu\n", phiN);
+
+
 
     return 1;
 }
