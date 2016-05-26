@@ -14,8 +14,7 @@
 /*
  * Used for storing the results of an
  * extended euclidean algorithm
- */
-typedef struct {
+ */ typedef struct {
     long long int a;
     long long int x;
     long long int y;
@@ -367,15 +366,18 @@ KeyPair generateKeyPair()
     }while(q == p);
     printf("\n");
 
+    p = 90547;
+    q = 95621;
+
     /* compute n */
-    newPair.private.n = (long long)p * (long long)q;
+    newPair.private.n = (long long int)p * (long long int)q;
     newPair.public.n = newPair.private.n;
 
     printf("We have the following values:\n");
     printf("p = %'d\nq = %'d\nn = %'lli\n", p, q, newPair.private.n);
     
     /* compute the value of phiN */
-    long long int phiN = (long long)(p - 1) * (long long)(q - 1);
+    long long int phiN = (long long int)(p - 1) * (long long int)(q - 1);
 
     printf("phi(n) = %'lli\n", phiN);
 
@@ -424,7 +426,7 @@ KeyPair generateKeyPair()
  * PrivateKey not needed, but it'd be a good idea to sign
  * the message prior to encryption.
  */
-void encrypt(const char *plainPtr, int length, PublicKey to)
+void encrypt(const char *plainPtr, PublicKey to, char **cipherText)
 {
     /*
     int ii;
@@ -444,7 +446,23 @@ void encrypt(const char *plainPtr, int length, PublicKey to)
     mp_set_int(&shift, 1000);
     mp_set_int(&message, 0);
     mp_set_int(&exp, to.e);
-    mp_set_int(&n, to.n);
+
+
+
+    /* 
+     * libtommath is a pure c implementation which
+     * supports at most 32 bit integer input.
+     *
+     * because of this we must convert our long long
+     * to a string an then use mp_read_radix()
+     *
+     * Pretty hacky...
+     */
+    // mp_set_int(&n, to.n);
+    char tmpString[64];
+    sprintf(tmpString, "%lli", to.n);
+    mp_read_radix(&n, tmpString, 10);
+
 
     int index = 0;
 
@@ -462,12 +480,12 @@ void encrypt(const char *plainPtr, int length, PublicKey to)
 
     /* message mp_int contains the entire message to encrypt */
     int sizeOfCipher;
-    char *cipherText;
 
     char output[16000];
     mp_toradix(&message, (char *)&output, 10);
     printf("message for m = %s\n", output);
 
+    
     char output1[16000];
     mp_toradix(&exp, (char *)&output1, 10);
     printf("exp for m = %s\n", output1);
@@ -475,21 +493,19 @@ void encrypt(const char *plainPtr, int length, PublicKey to)
     char output2[16000];
     mp_toradix(&n, (char *)&output2, 10);
     printf("n for m = %s\n", output2);
+    
 
     mp_exptmod(&message, &exp, &n, &cipher);
 
     if (mp_radix_size(&cipher, 10, &sizeOfCipher) == MP_OKAY)
     {
-        printf("Creating char array of size %d\n", sizeOfCipher);
-        cipherText = (char *)malloc(sizeof(char) * sizeOfCipher);
-
-        mp_toradix(&cipher, cipherText, 10);
+        //printf("Creating char array of size %d\n", sizeOfCipher);
+        printf("Copying cipher output into cipher pointer\n");
+        *cipherText = (char *)malloc(sizeof(char) * sizeOfCipher);
+        mp_toradix(&cipher, *cipherText, 10);
     }
 
-    printf("%s\n", cipherText);
-
-    
-
+    printf("Output cipher text = %s\n", *cipherText);
     /*
     message[ii / charSplit] = message[ii / charSplit] * 1000;
     message[ii / charSplit] += (long long int)plainPtr[ii];
@@ -537,6 +553,39 @@ void encrypt(const char *plainPtr, int length, PublicKey to)
     */
 }
 
+void decrypt(char *cipherText, PrivateKey private, char **plaintext)
+{
+    mp_int cipher, plain, d, n, shift, charVal;
+    int res;
+    if ((res = mp_init_multi(&cipher, &plain, &d, 
+                    &charVal, &n, &shift, NULL)) != MP_OKAY)
+    {
+        printf("Error initilising the number. %s\n", 
+                mp_error_to_string(res));
+    }
+
+    mp_read_radix(&cipher, cipherText, 10);
+
+    char outputCipher[16000];
+    mp_toradix(&cipher, (char *)outputCipher, 10);
+    printf("input cipher = %s\n", outputCipher);
+
+    printf("private.d = %lli\n", private.d);
+    printf("private.n = %lli\n", private.n);
+
+    mp_set_int(&shift, 1000);
+    mp_set_int(&plain, 0);
+    mp_set_int(&d, private.d);
+    mp_set_int(&n, private.n);
+
+    mp_exptmod(&cipher, &d, &n, &plain);
+
+    char block[16000];
+    mp_toradix(&plain, (char *)&block, 10);
+
+    printf("decrypted text: %s\n", block);
+}
+
 int main(void)
 {
     /* setup functions for external libraries*/
@@ -551,12 +600,24 @@ int main(void)
     receiver = generateKeyPair();
 
     char plaintext[9] = {"TestingT"};
+    
+    /* 
+     * this will be malloc'ed during the encryption
+     * function call
+     */
+    char *cipher = NULL;
+    char *plain = NULL;
+
+    printf("private.n = %lli\n", receiver.private.n);
+    printf("public.n = %lli\n", receiver.public.n);
+
 
     /* encrypt the message for the receiver */
-    encrypt((char *)&plaintext, strlen(plaintext), receiver.public);
+    encrypt((char *)&plaintext, receiver.public, &cipher);
 
-    //decrypt(cipher, receiver.private);
+    printf("Output cipher text = %s\n", cipher);
 
+    decrypt(cipher, receiver.private, &plain);
 
     return 1;
 }
