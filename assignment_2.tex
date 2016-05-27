@@ -301,24 +301,51 @@ modularExponentiation = 2991
         attempt to decrypt the block using the \textit{decrypt()} function.
         Once it has the plain text as an integer representation it will extract
         out the number of chars listed in the first integer of the file.\\
-
-
     \end{quoting}
 \end{homeworkProblem}
 
 %----------------------------------------------------------------------------------------
 
     \begin{homeworkProblem}
+        \begin{quoting}
+
+            We are told that Bob has managed to obtain a value for \textbf{m'}
+            such that \textbf{$H(m) = H(m')$}. Basically what Bob has managed to
+            find is a collision in the hash function \textbf{$H()$} where he is
+            able to generate the same hash value with a different input m. \\
+
+            This initially sounds like it defeats the purpose of the hash
+            function, while in theory it does in practice it is unlikely to
+            cause any real damange. If we imagine the message space that can be
+            passed into the hash function, we know that it can be infinite.
+            Because of this, it's logical to conclude that there must be
+            atleast one value for m such that it collides with the other
+            messages hash. When you consider all the possible combinations
+            and permutations of the characters it's also easy to conclude that
+            the likely-hood of any one of these combinations generate a
+            legiable message, even more so one that benifits the attacker, is
+            extremely slim. \\
+
+            Because of this, we can conclude that Bob should be able to replace
+            the message that has been signed with his newly found \textbf{$m'$}
+            however it's unlikely it will do any significant damage to Alice.
+
+        \end{quoting}
     \end{homeworkProblem}
 
     \begin{homeworkProblem} 
         Mathematically prove the following assertion. Given two
         positive integers, a and b, prove the following.  
-        \begin{center}
-            $ gcd(a,b) = gcd(b, a\ \text{mod}\ b) $
-        \end{center}
-        \begin{quoting}
-            
-        \end{quoting}
+        \begin{align*}
+            gcd(a,b) &= gcd(b, a\ \text{mod}\ b) \\
+            \shortintertext{Lets define:} \\
+            r_{2} &= \text{gcd($a$, $b$)} \\
+            \shortintertext{Given the definition of GCD:} \\
+            a = kb + r &\equiv r\ (\text{mod}\ b) \\
+            \shortintertext{From this we know that $r_{2}$ must be a factor:} \\
+            a | r_{2} &\ \& \&\ b | r_{2} \\
+            \shortintertext{Example:} \\
+            \text{gcd($15$,$10$)} = \text{gcd($10$,$5$)} &= \text{gcd($5$,$0$)} = 5
+        \end{align*}
     \end{homeworkProblem} 
 \end{document}
