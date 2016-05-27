@@ -371,7 +371,6 @@ KeyPair generateKeyPair()
     {
         newPair.public.e = ((long long)rand() % ((long long)phiN - 1 + 1)) + 1;
     }while(isCoprime(newPair.public.e, phiN) != true);
-    newPair.public.e = 7;
 
     if (DEBUG == 1)
     {
@@ -677,6 +676,11 @@ void encryptFile(FILE *in, FILE* out, KeyPair receiver)
         toEncrypt[curFilled] = c;
         curFilled++;
     }
+
+    char *cipher = NULL;
+    encrypt((char *)toEncrypt, receiver.public, &cipher);
+    fprintf(out, "%s ", cipher);
+    free(toEncrypt);
 }
 
 /*
