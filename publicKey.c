@@ -11,7 +11,7 @@
 #define PRIME_MIN 10000
 #define PRIME_MAX 100000
 
-#define DEBUG 1
+#define DEBUG 0
 
 /*
  * Used for storing the results of an
@@ -80,6 +80,9 @@ int lehmann(int p)
 
 /*
  * run lehmann's t times
+ *
+ * once run t time the probability of false posititives
+ * is 1 - 1/(2^(t)) where t is the number of times = 10.
  */
 bool loopLehmann(int p, int t)
 {
@@ -108,32 +111,31 @@ bool loopLehmann(int p, int t)
 long long int modularExponentiation(long long int M, 
         long long int e, long long int n)
 {
+    /* long longs are able to store 2^64 */
     long long int c;
     long long int largestPowerOf2 = sizeof(unsigned long long) * 8;
 
-    /** 
-     * unsigned longs have a max size of 2^64 
-     * if it's longer we will need to split up into parts
-     */
-
-    /* we can't perform this calculation we need
+    /* Because we can store at most 2^64 in pure c, we must
+     * check if we have enough space in our data types. If no
+     * we can't perform this calculation we need
      * to break it up into smaller pieces. */
     if (powerOfBase2(M, e) >= largestPowerOf2)
     {
         long long int modProduct = 1;
         long long int remainingPower = e;
 
-        /* check if it's even and split it */
+        /* split into two "equal" parts using recusion */
         modProduct *= modularExponentiation(M, (remainingPower/2), n);
         remainingPower -= remainingPower/2;
 
         modProduct *= modularExponentiation(M, remainingPower, n);
 
+        // once done, calculate the final value c
         c = modProduct % n;
     }
     else
     {
-        c = (long long int)pow((long long int)M, (long long int)e) % (long long int)n;
+        c = (long long int) pow(M, e) % n;
     }
     
     return c;
@@ -214,7 +216,10 @@ long long int gcdModularMultiplicativeInverse(long long int a, long long int m)
     Result extended = extendedGcd(a, m);
     long long int retVal;
 
-    printf("input is a = %lli and b = %lli\n", a, m);
+    if (DEBUG == 1)
+    {
+        printf("input is a = %lli and b = %lli\n", a, m);
+    }
 
     if (extended.a != 1)
     {
@@ -225,39 +230,14 @@ long long int gcdModularMultiplicativeInverse(long long int a, long long int m)
     else
     {
         retVal = extended.x;
-        printf("ext.a = %lli\next.x = %lli\next.y = %lli\n", 
-                extended.a, extended.x, extended.y);
+        if (DEBUG == 1)
+        {
+            printf("ext.a = %lli\next.x = %lli\next.y = %lli\n", 
+                    extended.a, extended.x, extended.y);
+        }
     }
 
     return retVal;
-}
-
-/*
- * finds the greatest common divisor between two
- * numbers a and b.
- */
-int gcd(long long int a, long long int b)
-{
-    int gcd;
-    while (a != 0 && b != 0)
-    {
-        if (a > b)
-        {
-            a %= b;
-        }
-        else
-        {
-            b %= a;
-        }
-    }
-
-    gcd = (int) b;
-    if (a > b)
-    {
-        gcd = (int) a;
-    }
-
-    return gcd;
 }
 
 /*
@@ -284,6 +264,7 @@ Result extendedGcd(long long int a, long long int b)
         long long int q = a / b; // integer division.
         long long int tmpx, tmpy, tmpa;
 
+        /* for swapping variables around */
         tmpx = x;
         tmpy = y;
         tmpa = a;
@@ -353,6 +334,8 @@ KeyPair generateKeyPair()
     p = findPrime(PRIME_MIN, PRIME_MAX);
     printf("found p");
 
+    /* this will continue to loop until we get
+     * a distinct value for q relative to p */
     q = 0;
     do
     {
@@ -360,6 +343,7 @@ KeyPair generateKeyPair()
          * if not, we rejected q */
         if (q != 0)
         {
+            /* I've never actually seen this happen */
             printf(".q rejected");
         }
 
@@ -368,22 +352,18 @@ KeyPair generateKeyPair()
     }while(q == p);
     printf("\n");
 
-    //p = 90547;
-    //q = 95621;
-    //p = 17;
-    //q = 11;
-
     /* compute n */
     newPair.private.n = (long long int)p * (long long int)q;
     newPair.public.n = newPair.private.n;
 
-    printf("We have the following values:\n");
-    printf("p = %'d\nq = %'d\nn = %'lli\n", p, q, newPair.private.n);
+    if (DEBUG == 1)
+    {
+        printf("We have the following values:\n");
+        printf("p = %'d\nq = %'d\nn = %'lli\n", p, q, newPair.private.n);
+    }
     
     /* compute the value of phiN */
     long long int phiN = (long long int)(p - 1) * (long long int)(q - 1);
-
-    printf("phi(n) = %'lli\n", phiN);
 
     /* pick a value for e such that 
      * 1 < e < phiN and GCD(e, phiN) == 1*/
@@ -391,16 +371,13 @@ KeyPair generateKeyPair()
     {
         newPair.public.e = ((long long)rand() % ((long long)phiN - 1 + 1)) + 1;
     }while(isCoprime(newPair.public.e, phiN) != true);
-    printf("Selected e value before force change is %'lli\n", newPair.public.e);
-    //newPair.public.e = 7;
-    //newPair.public.e = 455082247U;
+    newPair.public.e = 7;
 
-    printf("Selected a value for e = %'lli\n", newPair.public.e);
-
-    /*
-    Result ext = extendedGcd(35, 15);
-    printf("ext.a = %lli\next.x = %lli\next.y = %lli\n", ext.a, ext.x, ext.y);
-    */
+    if (DEBUG == 1)
+    {
+        printf("phi(n) = %'lli\n", phiN);
+        printf("e = %'lli\n", newPair.public.e);
+    }
 
     /* try and solve for d using the extended euclidean algorithm
      * to find the modular muliplicative inverse. */
@@ -416,7 +393,10 @@ KeyPair generateKeyPair()
         newPair.private.d += phiN;
     }
 
-    printf("We have found d = %'lli\n", newPair.private.d);
+    if (DEBUG == 1)
+    {
+        printf("We have found d = %'lli\n", newPair.private.d);
+    }
 
     return newPair;
 }
@@ -453,11 +433,11 @@ void encrypt(const char *plainPtr, PublicKey to, char **cipherText)
                 mp_error_to_string(res));
     }
 
+    /* initialize all of our variables in the format
+     * of mp_int */
     mp_set_int(&shift, 1000);
     mp_set_int(&message, 0);
     mp_set_int(&exp, to.e);
-
-
 
     /* 
      * libtommath is a pure c implementation which
@@ -466,21 +446,19 @@ void encrypt(const char *plainPtr, PublicKey to, char **cipherText)
      * because of this we must convert our long long
      * to a string an then use mp_read_radix()
      *
-     * Pretty hacky...
+     * Pretty hacky... but it works.
      */
-    // mp_set_int(&n, to.n);
     char tmpString[64];
     sprintf(tmpString, "%lli", to.n);
     mp_read_radix(&n, tmpString, 10);
-
 
     int index = 0;
     
     /* ensure that the size of M is less than n */
     int numChars;
-    int numToStore;
+    //int numToStore;
     mp_radix_size(&n, 10, &numChars);
-    if (numChars < 3)
+    /*if (numChars < 3)
     {
         // can't even store one char here...
     }
@@ -488,25 +466,19 @@ void encrypt(const char *plainPtr, PublicKey to, char **cipherText)
     {
         // how many chars can we store?
         numToStore = (numChars / 3);
-
-        /* to be safe lets store one less than
-         * the max number we can */
-        if (numToStore > 1)
-        {
-            //numToStore -= 1;
-        }
-    }
-    //printf("size to store = %d\n", numToStore);
+    }*/
 
     /* shift the message by 1000 and add the most recent char */
     while (plainPtr[index] != '\0')
     {
+        /* convert the chars in into the libtommath mp_int */
         mp_set_int(&charVal, (int)plainPtr[index]);
 
+        /* shift three values to the left and add in our next
+         * char value. */
         mp_mul(&message, &shift, &message);
         mp_add(&message, &charVal, &message);
-        /*printf("added %c to number it has a value %lu\n", 
-                plainPtr[index], mp_get_int(&charVal));*/
+
         index++;
     }
 
@@ -515,10 +487,10 @@ void encrypt(const char *plainPtr, PublicKey to, char **cipherText)
 
     if (DEBUG == 1)
     {
+        /* some debugging stuff */
         char output[16000];
         mp_toradix(&message, (char *)&output, 10);
         printf("message for m = %s\n", output);
-
         
         char output1[16000];
         mp_toradix(&exp, (char *)&output1, 10);
@@ -530,62 +502,18 @@ void encrypt(const char *plainPtr, PublicKey to, char **cipherText)
     }
     
 
+    /* use libtommath library to compute the Modular Exponentiation
+     * given that we were not told explicitily to use our own function */
     mp_exptmod(&message, &exp, &n, &cipher);
 
+    /* get a string representation of the computer cipher text */
     if (mp_radix_size(&cipher, 10, &sizeOfCipher) == MP_OKAY)
     {
-        //printf("Creating char array of size %d\n", sizeOfCipher);
-        printf("Copying cipher output into cipher pointer\n");
         *cipherText = (char *)malloc(sizeof(char) * sizeOfCipher);
         mp_toradix(&cipher, *cipherText, 10);
     }
 
     printf("Output cipher text = %s\n", *cipherText);
-    /*
-    message[ii / charSplit] = message[ii / charSplit] * 1000;
-    message[ii / charSplit] += (long long int)plainPtr[ii];
-
-    mp_int result, messageHolder, exp, n;
-    int resultCode;
-
-    if ((resultCode = mp_init_multi(&result, &messageHolder, &exp, &n, NULL)) 
-            != MP_OKAY)
-    {
-        printf("Error initilising the number. %s\n", 
-                mp_error_to_string(resultCode));
-    }
-
-
-    mp_exptmod(&messageHolder, &exp, &n, &result);
-
-    bool debug = false;
-    if (debug == true)
-    {
-        char output[16000];
-        mp_toradix(&result, (char *)&output, 10);
-        printf("cipher for m%d = %s\n", ii, output);
-
-        char output1[16000];
-        mp_toradix(&exp, (char *)&output1, 10);
-        printf("exp for m%d = %s\n", ii, output1);
-
-        char output2[16000];
-        mp_toradix(&n, (char *)&output2, 10);
-        printf("n for m%d = %s\n", ii, output2);
-
-        char output3[16000];
-        mp_toradix(&messageHolder, (char *)&output3, 10);
-        printf("message for m%d = %s\n", ii, output3);
-    }
-
-    * convert this round to base 10 and output *
-    char block[16000];
-    mp_toradix(&result, (char *)&block, 10);
-
-    printf("%s ", block);
-
-    printf("\n");
-    */
 }
 
 void decrypt(char *cipherText, PrivateKey private, char **plainText)
@@ -689,9 +617,6 @@ void decrypt(char *cipherText, PrivateKey private, char **plainText)
 
 void encryptFile(FILE *in, FILE* out, KeyPair receiver)
 {
-    /* print header to encrypted content */
-    //fprintf(out, "=============================RSA Encrypted DATA=============================\n");
-
     /* mp_int ready for n */
     mp_int n;
     int res;
@@ -752,73 +677,73 @@ void encryptFile(FILE *in, FILE* out, KeyPair receiver)
         toEncrypt[curFilled] = c;
         curFilled++;
     }
-    //fprintf(out, "\n=============================RSA Encrypted DATA=============================");
 }
 
+/*
+ * accepts two file pointers for in and out.
+ * The expected file format is a single in stating how
+ * many chars exist within the 'blocks' and each set of
+ * cipher texts to decrypt
+ */
 void decryptFile(FILE *in, FILE* out, KeyPair receiver)
 {
+    /* 
+     * read in the number of chars we should expect
+     * per RSA encrypted 'block'
+     */
     int numChars;
     fscanf(in, "%d", &numChars);
     printf("There at %d chars per 'block' \n", numChars);
 
+    /* store our input value before decryption */
     unsigned long value;
 
+    /* loop through every cipher text until end of file */
     while (fscanf(in, "%lu", &value) != EOF)
     {
         printf("%lu\n", value);
-        char string[13]; // TODO decide on 13
+
+        /* string will be (numChars + 1)*3 */
+        char string[(numChars + 1) * 3];
         sprintf(string, "%lu", value);
 
+        /* perform the decryption on each*/
         char *plainText;
-
         decrypt((char *)&string, receiver.private, &plainText);
 
         fprintf(out, "%s", plainText);
     }
-
-    /*
-    char *toEncrypt = (char *)malloc(sizeof(char) * (numChars + 1));
-    int curFilled = 0;
-
-    char c;
-    while(( c = fgetc(in) ) != EOF)
-    {
-        if (curFilled == numChars)
-        {
-            toEncrypt[curFilled + 1] = '\0';
-           * process this encryption *
-            char *cipher = NULL;
-            encrypt((char *)toEncrypt, receiver.public, &cipher);
-
-            fprintf(out, "%s ", cipher);
-            curFilled = 0;
-            free(toEncrypt);
-            toEncrypt = (char *)malloc(sizeof(char) * (numChars + 1));
-        }
-
-        printf("%c\n", c);
-        toEncrypt[curFilled] = c;
-        curFilled++;
-    }
-    */
 }
 
 int main(void)
 {
+
+
+    
     /* setup functions for external libraries*/
     srand(time(NULL));
     setlocale(LC_NUMERIC, "");
     setbuf(stdout, NULL);
+
 
     /* generate the keypair for the receiver
      * we aren't goint to sign so sender's isn't required. */
     KeyPair receiver;
     receiver = generateKeyPair();
 
+    /* setup file pointers for reading in and writing
+     * to the files */
     FILE *in, *out;
     in = fopen("input", "r");
     out = fopen("output", "w+");
 
+    /* 
+     * will read the file and encrypt the largest size
+     * possible such that M < n.
+     * Note: traditionally when performing RSA larger keys
+     * will be used (2048 bits etc.) allowing for simply one
+     * encryption and decryption.
+     */
     encryptFile(in, out, receiver);
 
     fclose(in);
@@ -827,59 +752,13 @@ int main(void)
     in = fopen("output", "r");
     out = fopen("decrypted", "w+");
 
+    /*
+     * perform the reverse operation of the encryption
+     */
     decryptFile(in, out, receiver);
 
     fclose(in);
     fclose(out);
-
-    /*
-    char plaintext[9] = {"Tes"};
-    printf("Input plain text = %s\n", plaintext);
-    */
-    
-    /* 
-     * this will be malloc'ed during the encryption
-     * function call
-     *
-    char *cipher = NULL;
-    char *plain = NULL;
-
-    printf("private.n = %lli\n", receiver.private.n);
-    printf("public.n = %lli\n", receiver.public.n);
-
-
-     encrypt the message for the receiver 
-    encrypt((char *)&plaintext, receiver.public, &cipher);
-
-    printf("Output cipher text = %s\n", cipher);
-
-    decrypt(cipher, receiver.private, &plain);
-    printf("Output plaintext = %s\n", plain);
-
-    int index = 0;
-    bool same = true;
-
-    while (index < 3)
-    {
-        if (plain[index] != plaintext[index])
-        {
-            same = false;
-        }
-        index++;
-    }
-
-    if (same == true)
-    {
-        printf("-----------------------------\n");
-        printf("Encryption/Decryption successful!!!!\n");
-    }
-    else
-    {
-        printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
-        printf("Encryption/Decryption failed.\n");
-    }
-    */
-
 
     return 1;
 }
