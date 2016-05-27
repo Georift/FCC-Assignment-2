@@ -1,0 +1,324 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Programming/Coding Assignment
+% LaTeX Template
+%
+% This template has been downloaded from:
+% http://www.latextemplates.com
+%
+% Original author:
+% Ted Pavlic (http://www.tedpavlic.com)
+%
+% Note:
+% The \lipsum[#] commands throughout this template generate dummy text
+% to fill the template out. These commands should all be removed when 
+% writing assignment content.
+%
+% This template uses a Perl script as an example snippet of code, most other
+% languages are also usable. Configure them in the "CODE INCLUSION 
+% CONFIGURATION" section.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass{article}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage{graphicx} % Required to insert images
+\usepackage{listings} % Required for insertion of code
+\usepackage{courier} % Required for the courier font
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+\usepackage{multicol} 
+
+
+\usepackage{fancyvrb}
+
+% redefine \VerbatimInput
+\RecustomVerbatimCommand{\VerbatimInput}{VerbatimInput}%
+{
+    fontsize=\footnotesize,
+    %
+    frame=lines,  % top and bottom rule only
+    framesep=2em, % separation between frame and text
+    rulecolor=\color{Gray},
+    %
+    label=\fbox{\color{Black}JavaImplementationOutput.txt},
+    labelposition=topline,
+    %
+    commandchars=\|\(\), % escape character and argument delimiters for
+    % commands within the verbatim
+    commentchar=*        % comment character
+}
+
+\usepackage{quoting}
+\quotingsetup{vskip=0pt}
+
+\usepackage[plain]{algorithm}
+\usepackage{algpseudocode}
+\usepackage{subcaption}
+
+\usepackage{mathtools}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage[ansinew]{inputenc}
+
+\makeatletter
+\renewcommand{\boxed}[1]{\text{\fboxsep=.2em\fbox{\m@th$\displaystyle#1$}}}
+\makeatother
+
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1} % Line spacing
+
+% Set up the header and footer
+\pagestyle{fancy}
+\lhead{\hmwkAuthorName} % Top left header
+\chead{\hmwkClass: \hmwkTitle} % Top center head
+\rhead{}
+\cfoot{} % Bottom center footer
+\rfoot{Page\ \thepage\ of\ \protect\pageref{LastPage}} % Bottom right footer
+\renewcommand\headrulewidth{0.4pt} % Size of the header rule
+\renewcommand\footrulewidth{0.4pt} % Size of the footer rule
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+%----------------------------------------------------------------------------------------
+%	CODE INCLUSION CONFIGURATION
+%----------------------------------------------------------------------------------------
+
+\definecolor{MyDarkGreen}{rgb}{0.0,0.4,0.0} % This is the color used for comments
+\lstloadlanguages{Perl} % Load Perl syntax for listings, for a list of other languages supported see: ftp://ftp.tex.ac.uk/tex-archive/macros/latex/contrib/listings/listings.pdf
+\lstset{language=Perl, % Use Perl in this example
+        frame=single, % Single frame around code
+        basicstyle=\small\ttfamily, % Use small true type font
+        keywordstyle=[1]\color{Blue}\bf, % Perl functions bold and blue
+        keywordstyle=[2]\color{Purple}, % Perl function arguments purple
+        keywordstyle=[3]\color{Blue}\underbar, % Custom functions underlined and blue
+        identifierstyle=, % Nothing special about identifiers                                         
+        commentstyle=\usefont{T1}{pcr}{m}{sl}\color{MyDarkGreen}\small, % Comments small dark green courier font
+        stringstyle=\color{Purple}, % Strings are purple
+        showstringspaces=false, % Don't put marks in string spaces
+        tabsize=5, % 5 spaces per tab
+        %
+        % Put standard Perl functions not included in the default language here
+        morekeywords={rand},
+        %
+        % Put Perl function parameters here
+        morekeywords=[2]{on, off, interp},
+        %
+        % Put user defined functions here
+        morekeywords=[3]{test},
+       	%
+        morecomment=[l][\color{Blue}]{...}, % Line continuation (...) like blue comment
+        numbers=left, % Line numbers on left
+        firstnumber=1, % Line numbers start with line 1
+        numberstyle=\tiny\color{Blue}, % Line numbers are blue and small
+        stepnumber=5 % Line numbers go in steps of 5
+}
+
+% Creates a new command to include a perl script, the first parameter is the filename of the script (without .pl), the second parameter is the caption
+\newcommand{\perlscript}[2]{
+\begin{itemize}
+\item[]\lstinputlisting[caption=#2,label=#1]{#1.pl}
+\end{itemize}
+}
+
+%----------------------------------------------------------------------------------------
+%	DOCUMENT STRUCTURE COMMANDS
+%	Skip this unless you know what you're doing
+%----------------------------------------------------------------------------------------
+
+% Header and footer for when a page split occurs within a problem environment
+\newcommand{\enterProblemHeader}[1]{
+\nobreak\extramarks{#1}{#1 continued on next page\ldots}\nobreak
+\nobreak\extramarks{#1 (continued)}{#1 continued on next page\ldots}\nobreak
+}
+
+% Header and footer for when a page split occurs between problem environments
+\newcommand{\exitProblemHeader}[1]{
+\nobreak\extramarks{#1 (continued)}{#1 continued on next page\ldots}\nobreak
+\nobreak\extramarks{#1}{}\nobreak
+}
+
+\setcounter{secnumdepth}{0} % Removes default section numbers
+\newcounter{homeworkProblemCounter} % Creates a counter to keep track of the number of problems
+
+\newcommand{\homeworkProblemName}{}
+\newenvironment{homeworkProblem}[1][Question \arabic{homeworkProblemCounter}]{ % Makes a new environment called homeworkProblem which takes 1 argument (custom name) but the default is "Problem #"
+\stepcounter{homeworkProblemCounter} % Increase counter for number of problems
+\renewcommand{\homeworkProblemName}{#1} % Assign \homeworkProblemName the name of the problem
+\section{\homeworkProblemName} % Make a section in the document with the custom problem count
+\enterProblemHeader{\homeworkProblemName} % Header and footer within the environment
+}{
+\exitProblemHeader{\homeworkProblemName} % Header and footer after the environment
+}
+
+\newcommand{\problemAnswer}[1]{ % Defines the problem answer command with the content as the only argument
+\noindent\framebox[\columnwidth][c]{\begin{minipage}{0.98\columnwidth}#1\end{minipage}} % Makes the box around the problem answer and puts the content inside
+}
+
+\newcommand{\homeworkSectionName}{}
+\newenvironment{homeworkSection}[1]{ % New environment for sections within homework problems, takes 1 argument - the name of the section
+\renewcommand{\homeworkSectionName}{#1} % Assign \homeworkSectionName to the name of the section from the environment argument
+\subsection{\homeworkSectionName} % Make a subsection with the custom name of the subsection
+\enterProblemHeader{\homeworkProblemName\ [\homeworkSectionName]} % Header and footer within the environment
+}{
+\enterProblemHeader{\homeworkProblemName} % Header and footer after the environment
+}
+
+%----------------------------------------------------------------------------------------
+%	NAME AND CLASS SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\hmwkTitle}{Assignment\ \#2} % Assignment title
+\newcommand{\hmwkDueDate}{Friday, 27\textsuperscript{th} of May, 2016} % Due date
+\newcommand{\hmwkClass}{Fundamental Concepts of Cryptography} % Course/class
+\newcommand{\hmwkClassTime}{4:00pm} % Class/lecture time
+\newcommand{\hmwkClassInstructor}{Jones} % Teacher/lecturer
+\newcommand{\hmwkAuthorName}{Tim Cochrane} % Your name
+\newcommand{\studentNum}{17766247}
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title{
+\vspace{2in}
+\textmd{\textbf{\hmwkClass}}\\
+\textmd{\hmwkTitle}\\
+\normalsize\vspace{0.1in}\small{\hmwkDueDate}\\
+\vspace{3in}
+}
+
+\author{\textbf{\hmwkAuthorName} \\ \studentNum}
+\date{} % Insert date here if you want it to appear below your name
+
+%----------------------------------------------------------------------------------------
+
+\begin{document} 
+\maketitle\thispagestyle{empty}
+
+%----------------------------------------------------------------------------------------
+%	TABLE OF CONTENTS
+%----------------------------------------------------------------------------------------
+
+%\setcounter{tocdepth}{1} % Uncomment this line if you don't want subsections listed in the ToC
+
+%  \newpage
+%  \tableofcontents
+%  \newpage
+
+\clearpage
+\setcounter{page}{1}
+
+%----------------------------------------------------------------------------------------
+%	PROBLEM 1
+%----------------------------------------------------------------------------------------
+
+% To have just one problem per page, simply put a \clearpage after each problem
+
+\begin{homeworkProblem}
+    In the process of implementing RSA, exponentiation in modular arithmetic is an
+    important issue in computing. \\
+
+    \textbf{Solution}
+    \begin{quoting}
+        I have implemented a recursive algorithm which will break the size of the power in half at each level. It will continue to do this until it is able represent it within it's largest data type, \textit{long long int}.
+        \lstinputlisting[language=C, firstline=102, lastline=141]{publicKey.c}
+        \clearpage{}
+        The output to the provided values was:
+        \begin{lstlisting}
+M = 198
+e = 219469
+n = 3921
+modularExponentiation = 2991
+        \end{lstlisting}
+    \end{quoting}
+\end{homeworkProblem}
+
+%----------------------------------------------------------------------------------------
+%	PROBLEM 2
+%----------------------------------------------------------------------------------------
+
+\begin{homeworkProblem}
+    \begin{quoting}
+
+        I dediced to write my program in C after doing my previous assignment
+        in Java. The reason I choose to do this was due to how difficult it was
+        in java to deal with low level concepts such as binary. While this
+        assignment didn't deal with any binary I found the in-built modulus
+        operatior very helpful. Below I have described the layout of my program, for
+        more detail please look at the comments in the code. \\
+
+        \textbf{Datatypes}
+        \begin{enumerate}
+            \item \textbf{Result Struct} - Stores all the data returned by Extended Euclidean Algorithm.
+            \item \textbf{PublicKey Struct} - Stores the public exponent e and keysize n.
+            \item \textbf{PrivateKey Struct} - Stores the private exponent d and the keysize n.
+            \item \textbf{KeyPair Struct} - Stores both the public and private keys to form a keypair.
+        \end{enumerate}
+
+        \vskip0.5cm
+
+        \textbf{Function Descriptions} \\
+
+        The first thing the main function does it generates a single 
+        keypair which will be used by the receiver. Because we are not
+        implementing signatures in RSA we only need to know the public
+        key to encrypt the file, and the corresponding private key to
+        decrypt it. \\
+
+        The main function has a hard coded input file, currently
+        \textit{input}, which it will read from. It calls the function
+        \textit{encryptFile()} which accepts a file point to the input
+        file, output file and the receivers keypair. \\
+
+        \textit{encryptFile()} will calculate the largest possible number of
+        characters that it can encrypt using the keysize n from within the
+        keypair. With this information it will read at most the number of chars
+        that it can store, repeatitly calling encrypt with these chars. Before
+        outputting any encrypted text to the file it will output an int with
+        number of chars in each \textit{"block"}. \textit{(RSA isn't a block
+            cipher however given we are dealing with such a small key size, to
+        encrypt the entire file we must do it in stages)}. Each time the encrypt
+        function is called the cipher text is output with a space between it to
+        the output file. \\
+
+        Once the file has been completly been encrypted the next function
+        called is \textit{decryptFile()}. This function accepts an input file
+        pointer containing the cipher text and an output file pointer to the
+        file to output the decrypted data too. For each \textit{"block} it
+        attempt to decrypt the block using the \textit{decrypt()} function.
+        Once it has the plain text as an integer representation it will extract
+        out the number of chars listed in the first integer of the file.\\
+
+
+    \end{quoting}
+\end{homeworkProblem}
+
+%----------------------------------------------------------------------------------------
+
+    \begin{homeworkProblem}
+    \end{homeworkProblem}
+
+    \begin{homeworkProblem} 
+        Mathematically prove the following assertion. Given two
+        positive integers, a and b, prove the following.  
+        \begin{center}
+            $ gcd(a,b) = gcd(b, a\ \text{mod}\ b) $
+        \end{center}
+        \begin{quoting}
+            
+        \end{quoting}
+    \end{homeworkProblem} 
+\end{document}
